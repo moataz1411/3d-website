@@ -1,16 +1,18 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
-
+function createModel(containerId, modelPath, scale, cameraZ) {
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const container = document.getElementById(containerId);
+const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
 
 let object;
 let controls
-let objToRender='hollow knight';
+let objToRender=modelPath;
 const loader=new GLTFLoader();
-loader.load("models/hollow knight.gltf", function(gltf) {
-    object=gltf.scene;
+loader.load(modelPath, function(gltf) {
+    object = gltf.scene;
+    object.scale.set(scale, scale, scale);
     scene.add(object);
 },
 function(xhr){
@@ -20,13 +22,15 @@ function(error){
     console.error(error);
 });
 const renderer = new THREE.WebGLRenderer({ alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById("container3d").appendChild(renderer.domElement);
-camera.position.z = objToRender === 'hollow knight' ? 25 : 500;
+
+renderer.setSize(container.clientWidth, container.clientHeight);
+
+container.appendChild(renderer.domElement);
+camera.position.z = cameraZ;
 const topLight = new THREE.DirectionalLight(0xffffff, 1);
 topLight.position.set(500, 500, 500);
 scene.add(topLight);
-const ambientLight = new THREE.AmbientLight(0x333333, objToRender === 'hollow knight' ? 5 : 1);
+const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 scene.add(ambientLight);
 let mousex = 0, mousey = 0;
 window.addEventListener("mousemove", (e) => {
@@ -35,15 +39,21 @@ window.addEventListener("mousemove", (e) => {
 });
 function animate() {
     requestAnimationFrame(animate);
-    if (object&&objToRender === 'hollow knight') {
+    if (object){
         object.rotation.y =-3+mousex/window.innerWidth*3;
         object.rotation.x =-1.2+mousey * 2.5/window.innerHeight;
     }
     renderer.render(scene, camera);
 }
 window.addEventListener("resize", function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const container = document.getElementById(containerId);
+    camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(container.clientWidth, container.clientHeight);
 });
 animate();
+}
+
+createModel("container3d", "models/hollow knight.glb", 0.6, 5);
+createModel("container3d2", "models/hornet.glb", 0.005, 4);
+createModel("container3d3", "models/grimm.glb", 0.0009, 4);
